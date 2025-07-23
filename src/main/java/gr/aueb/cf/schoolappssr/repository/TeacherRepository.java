@@ -1,0 +1,29 @@
+package gr.aueb.cf.schoolappssr.repository;
+
+import gr.aueb.cf.schoolappssr.model.Teacher;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface TeacherRepository extends JpaRepository<Teacher, Long> , JpaSpecificationExecutor<Teacher> {
+
+    //derived queries
+    List<Teacher> findByRegionId(Long id);  //region . id , like a path
+    Optional<Teacher> findByUuid(String uuid);
+    Optional<Teacher> findByVat(String vat);
+
+    //custom queries
+    @Query("SELECT count(t) FROM Teacher t WHERE t.uuid = ?1")
+    long getCount(String uuid);
+
+    //CrudRepository gives
+    //save()
+    //delete()
+    //count()
+    //deleteById() etc
+}
