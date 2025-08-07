@@ -30,14 +30,14 @@ public class TeacherInsertValidator implements Validator {
     public void validate(@NonNull Object target, @NonNull Errors errors) {
         TeacherInsertDTO teacherInsertDTO = (TeacherInsertDTO) target;
 
-        if (teacherRepository.findByVat(teacherInsertDTO.getVat()).isPresent()) {
-            log.error("Save failed for teacher with vat={}. Teacher already exists.", teacherInsertDTO.getVat());
-            errors.rejectValue("vat","Το ΑΦΜ του καθηγητή υπάρχει ήδη.");
-        }
-
-        if (regionRepository.findById(teacherInsertDTO.getRegionId()).isEmpty()){
-            log.error("Save failed for teacher with vat={}. Region id={} is invalid.", teacherInsertDTO.getVat(), teacherInsertDTO.getRegionId());
-            errors.rejectValue("regionId", "Η περιοχή του καθηγητή δεν μπορεί να είναι κενή.");
-        }
+//        if (teacherRepository.findByVat(teacherInsertDTO.getVat()).isPresent()) {
+//            log.error("Save failed for teacher with vat={}. Teacher already exists.", teacherInsertDTO.getVat());
+//            errors.rejectValue("vat","Το ΑΦΜ του καθηγητή υπάρχει ήδη.");
+//        }
+//
+//        if (regionRepository.findById(teacherInsertDTO.getRegionId()).isEmpty()){
+//            log.error("Save failed for teacher with vat={}. Region id={} is invalid.", teacherInsertDTO.getVat(), teacherInsertDTO.getRegionId());
+//            errors.rejectValue("regionId", "Η περιοχή του καθηγητή δεν μπορεί να είναι κενή.");
+//        }
     }
 }

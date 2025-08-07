@@ -1,5 +1,6 @@
 package gr.aueb.cf.schoolappssr.mapper;
 
+import gr.aueb.cf.schoolappssr.dto.TeacherEditDTO;
 import gr.aueb.cf.schoolappssr.dto.TeacherInsertDTO;
 import gr.aueb.cf.schoolappssr.dto.TeacherReadOnlyDTO;
 import gr.aueb.cf.schoolappssr.model.Teacher;
@@ -13,7 +14,12 @@ public class Mapper {
     }
 
     public TeacherReadOnlyDTO mapToTeacherReadOnlyDTO (Teacher teacher ) {
-        return new TeacherReadOnlyDTO(teacher.getId(), teacher.getCreatedAt(), teacher.getUpdatedAt(),
+        return new TeacherReadOnlyDTO(teacher.getId(), teacher.getCreatedAt(), teacher.getUpdatedAt(), teacher.getUuid(),
                 teacher.getFirstname(), teacher.getLastname(), teacher.getVat(), teacher.getRegion().getName());
+    }
+
+    public TeacherEditDTO mapToTeacherEditDTO( Teacher teacher){
+        return new TeacherEditDTO(teacher.getUuid(), teacher.getFirstname(),
+                teacher.getLastname(), teacher.getVat(), teacher.getRegion().getId());
     }
 }

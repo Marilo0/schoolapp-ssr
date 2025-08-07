@@ -2,7 +2,10 @@ package gr.aueb.cf.schoolappssr.service;
 
 import gr.aueb.cf.schoolappssr.core.exceptions.EntityAlreadyExistsException;
 import gr.aueb.cf.schoolappssr.core.exceptions.EntityInvalidArgumentException;
+import gr.aueb.cf.schoolappssr.core.exceptions.EntityNotFoundException;
+import gr.aueb.cf.schoolappssr.dto.TeacherEditDTO;
 import gr.aueb.cf.schoolappssr.dto.TeacherInsertDTO;
+import gr.aueb.cf.schoolappssr.dto.TeacherReadOnlyDTO;
 import gr.aueb.cf.schoolappssr.mapper.Mapper;
 import gr.aueb.cf.schoolappssr.model.Teacher;
 import gr.aueb.cf.schoolappssr.model.static_data.Region;
@@ -12,7 +15,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor  //replaces Autowired dependency
@@ -58,5 +66,51 @@ public class TeacherService implements ITeacherService{
             throw e;
         }
 
+    }
+
+    @Override
+    @Transactional
+    public Page<TeacherReadOnlyDTO> getPaginatedTeachers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Teacher> teacherPage = teacherRepository.findAll(pageable);
+        return teacherPage.map(mapper::mapToTeacherReadOnlyDTO);
+    }
+
+    @Override
+    @Transactional(rollbackOn =  = Exception.class)
+    public Teacher updateTeacher(TeacherEditDTO dto)
+            throws EntityAlreadyExistsException, EntityInvalidArgumentException, EntityNotFoundException {
+        try{
+            Teacher teacher = teacherRepository.findByUuid(dto.getUuid())
+                    .orElseThrow(() -> new EntityNotFoundException(("Teacher", "Teacher not found")));
+
+            if(!teacher.getVat().equals(dto.getVat())) {
+                if (teacherRepository.findByVat(dto.getVat()).isEmpty()){
+                    teacher.setVat(dto.getVat());
+                }else throw new EntityAlreadyExistsException("Teacher", "Teacher with vat " + dto.getVat() + " already exists")
+            }
+
+            teacher.setFirstname(dto.getFirstname());
+            teacher.setLastname(dto.getLastname());
+
+            if (!Objects.equals(teacher.getRegion().getId(), dto.getRegionId()){
+                Region region = regionRepository.findById(dto.getRegionId())
+                                .orElseThrow(()-> new EntityInvalidArgumentException("Region", "Invalid region id"));
+                Region currentRegion = teacher.getRegion();
+                if (currentRegion != null){
+                    currentRegion.removeTeacher(teacher);
+                }
+                region.addTeacher(teacher);
+            }
+            teacherRepository.save(teacher);
+            log.info("Teacher with vat={} updated", dto.getVat());
+            return teacher;
+        }catch (EntityAlreadyExistsException e) {
+            log.error("Update failed for teacher with vat={}. Entity not found.", dto.getVat(), e);
+        }catch (EntityInvalidArgumentException e) {
+            log.error("Update failed for teacher with vat={}. Entity already exists.", dto.getVat(), e);
+        }catch (EntityNotFoundException e){
+            log.error("Update failed for teacher with vat={}. Region not found with id={}.", dto.getVat(), dto.getRegionId(), e);
+        }
     }
 }
