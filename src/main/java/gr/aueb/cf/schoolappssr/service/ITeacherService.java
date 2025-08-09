@@ -15,5 +15,8 @@ public interface ITeacherService {
 
     Page<TeacherReadOnlyDTO> getPaginatedTeachers(int page, int size);
 
-    Teacher updateTeacher(TeacherEditDTO dto) throws EntityAlreadyExistsException, EntityInvalidArgumentException, EntityNotFoundException;
+    void updateTeacher(TeacherEditDTO dto) throws EntityAlreadyExistsException, EntityInvalidArgumentException, EntityNotFoundException;
+
+    void deleteTeacherByUUID(String uuid) throws EntityNotFoundException;
+
 }

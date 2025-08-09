@@ -14,6 +14,7 @@ import gr.aueb.cf.schoolappssr.repository.TeacherRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,11 +22,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor  //replaces Autowired dependency
 @Slf4j //log
 public class TeacherService implements ITeacherService{
+
+//    private final Logger log = LoggerFactory.getLogger(TeacherService.class);
 
     private final TeacherRepository teacherRepository;
     private final RegionRepository regionRepository;
@@ -73,27 +77,28 @@ public class TeacherService implements ITeacherService{
     public Page<TeacherReadOnlyDTO> getPaginatedTeachers(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Teacher> teacherPage = teacherRepository.findAll(pageable);
+        log.debug("Get paginated teachers were returned successfully with page={} and size={}", page, size);
         return teacherPage.map(mapper::mapToTeacherReadOnlyDTO);
     }
 
     @Override
-    @Transactional(rollbackOn =  = Exception.class)
-    public Teacher updateTeacher(TeacherEditDTO dto)
+    @Transactional(rollbackOn = Exception.class)
+    public void updateTeacher(TeacherEditDTO dto)
             throws EntityAlreadyExistsException, EntityInvalidArgumentException, EntityNotFoundException {
         try{
             Teacher teacher = teacherRepository.findByUuid(dto.getUuid())
-                    .orElseThrow(() -> new EntityNotFoundException(("Teacher", "Teacher not found")));
+                    .orElseThrow(() -> new EntityNotFoundException("Teacher", "Teacher not found"));
 
             if(!teacher.getVat().equals(dto.getVat())) {
                 if (teacherRepository.findByVat(dto.getVat()).isEmpty()){
                     teacher.setVat(dto.getVat());
-                }else throw new EntityAlreadyExistsException("Teacher", "Teacher with vat " + dto.getVat() + " already exists")
+                }else throw new EntityAlreadyExistsException("Teacher", "Teacher with vat " + dto.getVat() + " already exists");
             }
 
             teacher.setFirstname(dto.getFirstname());
             teacher.setLastname(dto.getLastname());
 
-            if (!Objects.equals(teacher.getRegion().getId(), dto.getRegionId()){
+            if (!Objects.equals(teacher.getRegion().getId(), dto.getRegionId())){
                 Region region = regionRepository.findById(dto.getRegionId())
                                 .orElseThrow(()-> new EntityInvalidArgumentException("Region", "Invalid region id"));
                 Region currentRegion = teacher.getRegion();
@@ -104,13 +109,36 @@ public class TeacherService implements ITeacherService{
             }
             teacherRepository.save(teacher);
             log.info("Teacher with vat={} updated", dto.getVat());
-            return teacher;
         }catch (EntityAlreadyExistsException e) {
             log.error("Update failed for teacher with vat={}. Entity not found.", dto.getVat(), e);
+            throw e;
         }catch (EntityInvalidArgumentException e) {
             log.error("Update failed for teacher with vat={}. Entity already exists.", dto.getVat(), e);
+            throw e;
         }catch (EntityNotFoundException e){
             log.error("Update failed for teacher with vat={}. Region not found with id={}.", dto.getVat(), dto.getRegionId(), e);
+            throw e;
         }
+    }
+
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public void deleteTeacherByUUID(String uuid) throws EntityNotFoundException {
+        try {
+            Teacher teacher = teacherRepository.findByUuid(uuid)
+                    .orElseThrow(() -> new EntityNotFoundException("Teacher", "Teacher with uuid:" + uuid + " not found"));
+
+            //Εναλλακτικά για soft delete χρειαζόμαστε πεδίο deleted (Boolean) και deletedAt (LocalDateTime)
+            //κάνουμε setDeleted(true) και save
+            teacherRepository.deleteById(teacher.getId());
+            log.info("Teacher with uuid={} deleted", uuid);
+        }catch (EntityNotFoundException e){
+            log.error("Delete failed for teacher with uuid={} . Teacher not found.", uuid, e);
+            throw e;
+        }
+
+
+
+
     }
 }
