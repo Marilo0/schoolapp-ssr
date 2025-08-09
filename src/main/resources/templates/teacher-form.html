@@ -56,7 +56,7 @@
                         <option th:each="region : ${regions}" th:value="${region.id}" th:text="${region.name}"></option>
                     </select>
                     <div th:if="${#fields.hasErrors('regionId')}">
-                        <p th:classapend="${#fields.hasErrors('regionId')} ? 'error' "th:errors="*{regionId}"></p>
+                        <p th:classappend="${#fields.hasErrors('regionId')} ? 'error' "th:errors="*{regionId}"></p>
                     </div>
                 </div>
             </div>

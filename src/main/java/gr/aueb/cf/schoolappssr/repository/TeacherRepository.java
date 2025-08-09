@@ -18,7 +18,7 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> , JpaSpe
     Optional<Teacher> findByVat(String vat);
 
     //custom queries
-    @Query("SELECT count(t) FROM Teacher t WHERE t.uuid = ?1")
+    @Query("SELECT count(t) FROM Teacher t WHERE t.uuid = ?1")   //positional parameter
     long getCount(String uuid);
 
     //CrudRepository gives

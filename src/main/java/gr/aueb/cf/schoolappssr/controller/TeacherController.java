@@ -11,6 +11,7 @@ import gr.aueb.cf.schoolappssr.model.Teacher;
 import gr.aueb.cf.schoolappssr.repository.RegionRepository;
 import gr.aueb.cf.schoolappssr.repository.TeacherRepository;
 import gr.aueb.cf.schoolappssr.service.ITeacherService;
+import gr.aueb.cf.schoolappssr.validator.TeacherEditValidator;
 import gr.aueb.cf.schoolappssr.validator.TeacherInsertValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class TeacherController {
     private final TeacherRepository teacherRepository;
     private final Mapper mapper;
     private final TeacherInsertValidator teacherInsertValidator;
+    private final TeacherEditValidator teacherEditValidator;
 
 //    @Autowired
 //    public TeacherController(RegionRepository regionRepository) {
@@ -43,7 +45,7 @@ public class TeacherController {
 
     @GetMapping("/insert")
     public String getTeacherForm(Model model){
-        model.addAttribute("teacherInsertDTO", new TeacherInsertDTO());
+        model.addAttribute("teacherInsertDTO", new TeacherInsertDTO()); // model request scope
         model.addAttribute("regions", regionRepository.findAll(Sort.by("name")));  //PagingAndSortingRepository
         return "teacher-form";
     }
@@ -77,8 +79,8 @@ public class TeacherController {
 
     @GetMapping("/view")
     public String getPaginatedTeachers(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
         Model model){
 
         Page<TeacherReadOnlyDTO> teachersPage = teacherService.getPaginatedTeachers(page,size);
@@ -93,7 +95,7 @@ public class TeacherController {
     public String showEditForm(@PathVariable String  uuid,  Model model){
         try{
             Teacher teacher = teacherRepository.findByUuid(uuid)
-                    .orElseThrow(()-> EntityNotFoundException("Teacher", "Teacher not found"));
+                    .orElseThrow(()-> new EntityNotFoundException("Teacher", "Teacher not found"));
             model.addAttribute("teacherEditDTO", mapper.mapToTeacherEditDTO(teacher));
             model.addAttribute("regions", regionRepository.findAll(Sort.by("name")));
             return "teacher-edit-form";
@@ -108,11 +110,9 @@ public class TeacherController {
 
     @PostMapping("/edit")
     public String updateTeacher(@Valid @ModelAttribute("teacherEditDTO") TeacherEditDTO teacherEditDTO,
-                              BindingResult bindingResult,Model model){
+                              BindingResult bindingResult,Model model) {
 
-        Teacher updatedTeacher;
-
-        //teacherInsertValidator.validate(teacherEditDTOtDTO, bindingResult);
+        teacherEditValidator.validate(teacherEditDTO, bindingResult);
 
         if (bindingResult.hasErrors()){
             model.addAttribute("regions", regionRepository.findAll(Sort.by("name")));
@@ -120,16 +120,32 @@ public class TeacherController {
         }
 
         try {
-            updatedTeacher = teacherService.updatedTeacher(teacherEditDTO);
-            TeacherReadOnlyDTO readOnlyDTO = mapper.mapToTeacherReadOnlyDTO(updatedTeacher);
-            //redirectAttributes.addFlashAttribute("teacher", readOnlyDTO);
-            model.addAttribute("teacher", mapper.mapToTeacherReadOnlyDTO(updatedTeacher));
-            return  "/school/teachers/view";
+            teacherService.updateTeacher(teacherEditDTO);
 
+            // If we wanted to respond with a success page with teacher details,
+            // then we would need the following in comments, and also need from the service to
+            // send back the updated teacher. Otherwise, if no success page
+            // we can just redirect to teachers view,
+
+            //TeacherReadOnlyDTO readOnlyDTO = mapper.mapToTeacherReadOnlyDTO(updatedTeacher);
+            //redirectAttributes.addFlashAttribute("teacher", readOnlyDTO);
+
+            return "redirect:/school/teachers";
         }catch (EntityAlreadyExistsException | EntityInvalidArgumentException | EntityNotFoundException e){
             model.addAttribute("regions", regionRepository.findAll(Sort.by("name")));
             model.addAttribute("errorMessage", e.getMessage());
             return "teacher-edit-form";
+        }
+    }
+
+    @GetMapping("/delete/{uuid}")
+    public String deleteTeacher(@PathVariable String uuid, Model model){
+        try{
+            teacherService.deleteTeacherByUUID(uuid);
+            return "redirect:/school/teachers";
+        }catch (EntityNotFoundException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "teachers";
         }
     }
 }
