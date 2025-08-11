@@ -77,7 +77,7 @@ public class TeacherController {
         }
     }
 
-    @GetMapping("/view")
+    @GetMapping(" ")
     public String getPaginatedTeachers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
