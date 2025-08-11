@@ -19,21 +19,31 @@ public class CustomAuthProvider {
     private final UserDetailsService userDetailsService;
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder){
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
 
     }
 
     @Bean
-    private PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(11);
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
+    @Bean
+    public
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+
+        //         For high security systems, banking, etc.
+//        return new Argon2PasswordEncoder(
+//                16,     // saltLength (bytes) - usually 16-32
+//                32,     // hashLength (bytes) - usually 32
+//                4,      // parallelism (threads) - depends on your server
+//                65536,  // memory (KB) - 64MB in this example
+//                3       // iterations - usually 2-4
+//        );
+    }
+
 }
