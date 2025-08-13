@@ -1,7 +1,8 @@
 package gr.aueb.cf.schoolappssr.repository;
 
-import gr.aueb.cf.schoolappssr.core.enums.Role;
+//import gr.aueb.cf.schoolappssr.core.enums.Role;
 import gr.aueb.cf.schoolappssr.model.User;
+import gr.aueb.cf.schoolappssr.model.auth.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

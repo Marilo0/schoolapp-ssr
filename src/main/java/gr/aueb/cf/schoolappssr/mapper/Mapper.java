@@ -1,6 +1,6 @@
 package gr.aueb.cf.schoolappssr.mapper;
 
-import gr.aueb.cf.schoolappssr.core.enums.Role;
+//import gr.aueb.cf.schoolappssr.core.enums.Role;
 import gr.aueb.cf.schoolappssr.dto.TeacherEditDTO;
 import gr.aueb.cf.schoolappssr.dto.TeacherInsertDTO;
 import gr.aueb.cf.schoolappssr.dto.TeacherReadOnlyDTO;
@@ -32,7 +32,11 @@ public class Mapper {
         return User.builder()
                 .username(userInsertDTO.getUsername())
                 .password(userInsertDTO.getPassword())
-                .role(Role.valueOf(userInsertDTO.getRole().toUpperCase()))
+//                .role(Role.valueOf(userInsertDTO.getRole().toUpperCase()))
                 .build();
     }
+
+    //After changing from enum to entity Role...ο user έχει μέσα του role entity ενώ το dto έχει roleId...
+    // οπότε πρέπει να γίνει map , είτε στον mapper, είτε στο service.
+    //We did that in service.
 }

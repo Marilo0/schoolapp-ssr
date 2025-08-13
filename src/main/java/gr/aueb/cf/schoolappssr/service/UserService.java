@@ -4,6 +4,8 @@ import gr.aueb.cf.schoolappssr.core.exceptions.EntityAlreadyExistsException;
 import gr.aueb.cf.schoolappssr.dto.UserInsertDTO;
 import gr.aueb.cf.schoolappssr.mapper.Mapper;
 import gr.aueb.cf.schoolappssr.model.User;
+import gr.aueb.cf.schoolappssr.model.auth.Role;
+import gr.aueb.cf.schoolappssr.repository.RoleRepository;
 import gr.aueb.cf.schoolappssr.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Mapper mapper;
+    private final RoleRepository roleRepository;
 
 
     @Override
@@ -31,6 +34,9 @@ public class UserService implements IUserService {
             }
             User user = mapper.mapToUserEntity(userInsertDTO);
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+            Role role = roleRepository.findById(userInsertDTO.getRoleId()).orElse(null);
+            user.setRole(role);
             userRepository.save(user);
             log.info("Η αποθήκευση ολοκληρώθηκε επιτυχώς για τον χρήστη με username={}", userInsertDTO.getUsername());
 
