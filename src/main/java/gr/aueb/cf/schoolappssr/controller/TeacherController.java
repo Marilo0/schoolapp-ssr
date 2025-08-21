@@ -64,11 +64,12 @@ public class TeacherController {
 
         try {
             savedTeacher = teacherService.saveTeacher(teacherInsertDTO);
-            TeacherReadOnlyDTO readOnlyDTO = mapper.mapToTeacherReadOnlyDTO(savedTeacher);
-            redirectAttributes.addFlashAttribute("teacher", readOnlyDTO);
+            //if we wanted to respond with a success page with teacher details, then we would need :
+//            TeacherReadOnlyDTO readOnlyDTO = mapper.mapToTeacherReadOnlyDTO(savedTeacher);
+//            redirectAttributes.addFlashAttribute("teacher", readOnlyDTO);
             // Post - Redirect-Get (PRG) pattern είναι ένα web-development pattern
             // εμποδίζει τα duplicate submissions κάνοντας redirect μετά από ένα POST
-            return  "redirect:/school/teachers/view";   //!! not just return, but redirect
+            return  "redirect:/school/teachers";   //!! not just return, but redirect
 
         }catch (EntityAlreadyExistsException | EntityInvalidArgumentException e){
             model.addAttribute("regions", regionRepository.findAll(Sort.by("name")));
@@ -100,7 +101,7 @@ public class TeacherController {
             model.addAttribute("regions", regionRepository.findAll(Sort.by("name")));
             return "teacher-edit-form";
         }catch (EntityNotFoundException e){
-            log.error("Teacher with uuid={} not updated", uuid, e);
+            log.error("Teacher with uuid={} was not found.", uuid, e);
             model.addAttribute("regions", regionRepository.findAll(Sort.by("name")));
             model.addAttribute("errorMessage", e.getMessage());
             return "teacher-edit-form";
