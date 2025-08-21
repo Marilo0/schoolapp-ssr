@@ -29,7 +29,7 @@ public class UserService implements IUserService {
 
         try {
             if (userRepository.findByUsername(userInsertDTO.getUsername()).isPresent()){
-                throw new EntityAlreadyExistsException("User", "Ο χρήστης με username={} " +
+                throw new EntityAlreadyExistsException("User", "Ο χρήστης με username: " +
                         userInsertDTO.getUsername() + "υπάρχει ήδη.");
             }
             User user = mapper.mapToUserEntity(userInsertDTO);
