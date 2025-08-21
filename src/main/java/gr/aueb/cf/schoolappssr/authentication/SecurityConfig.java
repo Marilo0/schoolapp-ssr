@@ -39,7 +39,7 @@ public class SecurityConfig {
 //                        .passwordParameter("password")
 //                        .loginProcessingUrl("/login")
 //                        .failureUrl("/login?error")
-                        .defaultSuccessUrl("/school/teachers", true)
+                        .defaultSuccessUrl("/school/teachers", false)
                         .permitAll()
                 )
                 .httpBasic(Customizer.withDefaults())
