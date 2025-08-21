@@ -43,12 +43,12 @@ public class TeacherService implements ITeacherService{
 //    }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackOn = { EntityInvalidArgumentException.class, EntityAlreadyExistsException.class})
     public Teacher saveTeacher(TeacherInsertDTO dto)
             throws EntityAlreadyExistsException, EntityInvalidArgumentException {
 
         try{
-            if (teacherRepository.findByVat(dto.getVat()).isPresent()){
+            if (dto.getVat() != null && teacherRepository.findByVat(dto.getVat()).isPresent()){
                 throw new EntityAlreadyExistsException("Teacher", "Teacher with vat " + dto.getVat() + " already exists");
             }
 
