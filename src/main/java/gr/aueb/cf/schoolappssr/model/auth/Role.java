@@ -38,6 +38,7 @@ public class Role {
     )
     private Set<Capability> capabilities = new HashSet<>();
 
+    //Helper Methods
     public void addCapability( Capability capability) {
         this.capabilities.add(capability);
         capability.getRoles().add(this);
@@ -55,7 +56,7 @@ public class Role {
         this.users.remove(user);
         user.setRole(null);
     }
-
+    //Bulk insert
     public void addUsers(Collection<User> users) {
         users.forEach(this::addUser);
     }
